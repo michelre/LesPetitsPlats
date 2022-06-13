@@ -4,6 +4,7 @@ let ingredients = []
 let appliances = []
 let ustensils = []
 let description = ''
+let filteredRecipes = []
 
 async function getRecipes() {
     const fetchData = await fetch('data/recipe.json')
@@ -27,25 +28,23 @@ async function displayData(recipes) {
         const userCardDOM = recipeModel.getUserCardDOM();
         recipeSection.appendChild(userCardDOM);
     });
-};
+}
 
-function initEventForm(){
+function initEventForm() {
     const researchBar = document.querySelector('.research_bar input')
     researchBar.addEventListener('input', (e) => {
         e.preventDefault()
-        if(e.target.value.length === 0){
+        if (e.target.value.length === 0) {
             displayData(allRecipes)
             return
         }
-        if(e.target.value.length < 3){
+        if (e.target.value.length < 3) {
             return
         }
         query = e.target.value
         description = e.target.value
-        ingredients = [e.target.value]
+        //ingredients = [e.target.value]
         filterRecipes()
-        //query = e.target.query.value
-        //filterRecipes()
     })
 }
 
@@ -53,14 +52,20 @@ async function init() {
     // Récupère les datas des recettes
     const {recipes} = await getRecipes();
     allRecipes = recipes
+
     console.log('all recipes', recipes)
     displayData(recipes);
     initEventForm()
     filterRecipes()
-};
+    ingredientsTags()
+    ustensilsTags()
+    appliancesTags()
+    initEventSelect()
+}
+
 
 function recipeFactory(data) {
-    const {name, servings, time, description, appliance, ustensils} = data;
+    const {name, servings, time, description} = data;
 
     function getUserCardDOM() {
         const article = document.createElement("article");
@@ -102,39 +107,39 @@ function recipeFactory(data) {
     return {getUserCardDOM};
 }
 
+
 function filterByIngredient(recipe) {
-    if(ingredients.length === 0){
+    if (ingredients.length === 0) {
         return true
     }
     return recipe.ingredients.filter(ingredient => {
-        console.log(ingredients.includes(ingredient.ingredient))
         return ingredients.includes(ingredient.ingredient)
     }).length > 0
 }
 
 function filterByUstensil(recipe) {
-    if(ustensils.length === 0){
+    if (ustensils.length === 0) {
         return true
     }
     return recipe.ustensils.filter(ustensil => ustensils.includes(ustensil)).length > 0
 }
 
 function filterByAppliance(recipe) {
-    if(appliances.length === 0){
+    if (appliances.length === 0) {
         return true
     }
     return appliances.includes(recipe.appliance)
 }
 
 function filterByDescription(recipe) {
-    if(description === ''){
+    if (description === '') {
         return true
     }
     return recipe.description.toLowerCase().includes(description.toLowerCase())
 }
 
 function filterByName(recipe) {
-    if(query === ''){
+    if (query === '') {
         return true
     }
     return recipe.name.toLowerCase().includes(query.toLocaleLowerCase())
@@ -143,48 +148,104 @@ function filterByName(recipe) {
 
 function filterRecipes() {
     const recipes = allRecipes.filter((recipe) => {
-        return (filterByIngredient(recipe) ||
-            filterByDescription(recipe) ||
-            filterByName(recipe)) &&
+        return (filterByName(recipe) || filterByDescription(recipe))  &&
+            filterByIngredient(recipe) &&
             filterByUstensil(recipe) &&
             filterByAppliance(recipe)
     })
     displayData(recipes)
+    ingredientsTags()
+    filteredRecipes = recipes
 }
 
-    // Get the button, and when the user clicks on it, execute myFunction
-    document.getElementById("dropbtn").onclick = function myFunction() {
-      document.getElementById("myDropdown").classList.toggle("show");
+console.log('new obj1', ingredients)
+console.log('new obj2', ustensils)
+
+
+function ingredientsTags() {
+    document.getElementById("Ingredients").innerHTML = ''
+    let ingredients = filteredRecipes
+        .map(recipe => recipe.ingredients
+            .map(ingredient => ingredient.ingredient))
+        .flat()
+    ingredients = [...new Set(ingredients)]
+    for (var i = 0; i < ingredients.length; i++) {
+        var sel = document.createElement("option");
+        sel.innerHTML = ingredients[i]
+        sel.value = ingredients[i];
+        document.getElementById("Ingredients").appendChild(sel);
     }
+}
 
-   // Same for Appareils
-   document.getElementById("dropbtn1").onclick = function myFunction() {
-    document.getElementById("myDropdown1").classList.toggle("show");
-  }
-   //Same for Ustensiles
-   document.getElementById("dropbtn2").onclick = function myFunction() {
-    document.getElementById("myDropdown2").classList.toggle("show");
-  }
-
-
-  function filterFunction() {
-    var input, filter, ul, li, a, i;
-    input = document.getElementById("myInput");
-    filter = input.value.toUpperCase();
-    div = document.getElementById("myDropdown");
-    a = div.getElementsByTagName("a");
-    for (i = 0; i < a.length; i++) {
-      txtValue = a[i].textContent || a[i].innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        a[i].style.display = "";
-      } else {
-        a[i].style.display = "none";
-      }
+function ustensilsTags() {
+    let ustensils = filteredRecipes
+        .map(recipe => recipe.ustensils)
+        .flat()
+    ustensils = [...new Set(ustensils)]
+    for (var i = 0; i < ustensils.length; i++) {
+        var sel = document.createElement("option");
+        sel.innerHTML = ustensils[i]
+        sel.value = ustensils[i];
+        document.getElementById("Ustensiles").appendChild(sel);
     }
-  }
+}
 
-  init();
+function appliancesTags() {
+    let appliances = filteredRecipes
+        .map(recipe => recipe.appliance)
+    appliances = [...new Set(appliances)]
+    for (var i = 0; i < appliances.length; i++) {
+        var sel = document.createElement("option");
+        sel.innerHTML = appliances[i]
+        sel.value = appliances[i];
+        document.getElementById("Appareils").appendChild(sel);
+    }
+}
 
+function addTagElement(value, callback){
+    const tags = document.querySelector('#tags')
+    const element = document.createElement('li')
+    element.innerText = value
+    element.addEventListener('click', (e) => {
+        callback()
+        e.target.remove()
+    })
+    tags.appendChild(element)
+}
+
+function initEventSelect(){
+    document.querySelector('#Ingredients').addEventListener('change', (e) => {
+        ingredients.push(e.target.value)
+        addTagElement(e.target.value, () => {
+            ingredients = ingredients.filter(i => i !== e.target.value)
+            filterRecipes()
+        })
+        filterRecipes()
+    })
+
+    document.querySelector('#Appareils').addEventListener('change', (e) => {
+        appliances.push(e.target.value)
+        addTagElement(e.target.value, () => {
+            appliances = appliances.filter(i => i !== e.target.value)
+            filterRecipes()
+        })
+        filterRecipes()
+    })
+
+    document.querySelector('#Ustensiles').addEventListener('change', (e) => {
+        ustensils.push(e.target.value)
+        addTagElement(e.target.value, () => {
+            ustensils = ustensils.filter(i => i !== e.target.value)
+            filterRecipes()
+        })
+        filterRecipes()
+    })
+}
+
+
+init();
+
+/** */
 
 /**
  * TODO:
