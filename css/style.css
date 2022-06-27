@@ -11,16 +11,37 @@ article img{
     padding: 1em;
 }
 
+article{
+  height: 350px;
+}
+
 .research {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
   }
   
-  .research__bar {
-    display: flex;
-    height: 70px;
+  .research_bar {
+    position: relative;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+
+  .research_bar_input{
+    background:#e6e3e3;
+    border: none;
+    padding: 16px;
     width: 100%;
+    border-radius: 10px;
+  }
+
+  .research_bar_submit{
+    background: transparent;
+    border: none;
+    position: absolute;
+    right: 8px;
+    top: 0;
+    height: 100%;
   }
  
 /* Dropdown Button */
@@ -113,3 +134,33 @@ article img{
   .dropdown_container {
       display: flex;
   }
+
+  .recipe_section{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    width: 95%;
+    margin: 20px auto;
+}
+
+.details_container{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+ul{
+  list-style: none;
+}
+
+#Ingredients{
+  background-color: #3282f7;
+}
+
+#Ustensiles{
+  background-color: #68d9a5;
+}
+
+#Appareils{
+  background-color: #ed6455;
+}

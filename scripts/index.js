@@ -1,3 +1,6 @@
+import { recipeFactory } from "../scripts/factory.js"
+import { getRecipes } from "../scripts/api.js"
+
 let allRecipes = []
 let query = ''
 let ingredients = []
@@ -5,20 +8,8 @@ let appliances = []
 let ustensils = []
 let description = ''
 let filteredRecipes = []
+let filteredArray = []
 
-async function getRecipes() {
-    const fetchData = await fetch('data/recipe.json')
-        .then((response) => {
-            return response.json()
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((err) => {
-            console.log(err)
-        })
-    return fetchData
-}
 
 async function displayData(recipes) {
     const recipeSection = document.querySelector(".recipe_section");
@@ -39,11 +30,10 @@ function initEventForm() {
             return
         }
         if (e.target.value.length < 3) {
-            return
+            return 
         }
         query = e.target.value
         description = e.target.value
-        //ingredients = [e.target.value]
         filterRecipes()
     })
 }
@@ -52,60 +42,15 @@ async function init() {
     // Récupère les datas des recettes
     const {recipes} = await getRecipes();
     allRecipes = recipes
-
-    console.log('all recipes', recipes)
-    displayData(recipes);
-    initEventForm()
-    filterRecipes()
-    ingredientsTags()
-    ustensilsTags()
-    appliancesTags()
+    filteredRecipes = []
+    recipes.forEach(r => filteredRecipes.push(r))
+    applyTagsToOptions()
     initEventSelect()
+    initEventForm()
+    displayData(recipes);
 }
 
 
-function recipeFactory(data) {
-    const {name, servings, time, description} = data;
-
-    function getUserCardDOM() {
-        const article = document.createElement("article");
-        const picture = `assets/logolpp.png`;
-        const img = document.createElement("img");
-        img.setAttribute("src", picture);
-        const h2 = document.createElement("h2");
-        h2.textContent = name;
-        const h3 = document.createElement("h3");
-        h3.textContent = "for" + " " + servings + " " + "people";
-        var myIng = document.createElement("ul");
-        var ingredients = data['ingredients'];
-        for (var i = 0; i < ingredients.length; i++) {
-            var myPara3 = document.createElement('li');
-            if (ingredients[i].ingredient === undefined)
-                ingredients[i].ingredient = '';
-            if (ingredients[i].quantity === undefined)
-                ingredients[i].quantity = '';
-            if (ingredients[i].unit === undefined)
-                ingredients[i].unit = '';
-            myPara3.textContent = ingredients[i].ingredient + " " + ingredients[i].quantity + " " + ingredients[i].unit;
-            myIng.appendChild(myPara3)
-        }
-        const my2p = document.createElement("p");
-        my2p.textContent = time + " " + "min";
-        const my3p = document.createElement("p");
-        my3p.textContent = description;
-        article.appendChild(img);
-        article.appendChild(h2);
-        article.appendChild(h3);
-        article.appendChild(my2p);
-        article.appendChild(my3p);
-        article.appendChild(myIng);
-
-
-        return article;
-    }
-
-    return {getUserCardDOM};
-}
 
 
 function filterByIngredient(recipe) {
@@ -117,19 +62,6 @@ function filterByIngredient(recipe) {
     }).length > 0
 }
 
-function filterByUstensil(recipe) {
-    if (ustensils.length === 0) {
-        return true
-    }
-    return recipe.ustensils.filter(ustensil => ustensils.includes(ustensil)).length > 0
-}
-
-function filterByAppliance(recipe) {
-    if (appliances.length === 0) {
-        return true
-    }
-    return appliances.includes(recipe.appliance)
-}
 
 function filterByDescription(recipe) {
     if (description === '') {
@@ -146,20 +78,39 @@ function filterByName(recipe) {
 
 }
 
+function applyTagsToOptions() {
+    ingredientsTags()
+    ustensilsTags()
+    appliancesTags()
+}
+
 function filterRecipes() {
     const recipes = allRecipes.filter((recipe) => {
         return (filterByName(recipe) || filterByDescription(recipe))  &&
-            filterByIngredient(recipe) &&
-            filterByUstensil(recipe) &&
-            filterByAppliance(recipe)
+            filterByIngredient(recipe)
     })
-    displayData(recipes)
-    ingredientsTags()
     filteredRecipes = recipes
+    applyTagsToOptions()
+    displayData(recipes)
+    console.log(recipes)
 }
 
-console.log('new obj1', ingredients)
-console.log('new obj2', ustensils)
+function filterRecipesByTags(selectedTag, type){
+     filteredRecipes = filteredRecipes.filter((recipe) => {
+        switch (type) {
+            case 'ingredient':
+                return recipe.ingredients.find(y => y.ingredient === selectedTag) ;
+            case 'appliance':
+                return recipe.appliance == selectedTag ;
+            case 'ustensil':
+                return recipe.ustensils.find(ustensil => ustensil == selectedTag) ;
+            default:
+                break;
+        }
+})
+    applyTagsToOptions()
+    displayData(filteredRecipes)
+}
 
 
 function ingredientsTags() {
@@ -170,86 +121,90 @@ function ingredientsTags() {
         .flat()
     ingredients = [...new Set(ingredients)]
     for (var i = 0; i < ingredients.length; i++) {
-        var sel = document.createElement("option");
-        sel.innerHTML = ingredients[i]
-        sel.value = ingredients[i];
+       
+            var sel = document.createElement("option");
+            sel.innerHTML = ingredients[i]
+            sel.value = ingredients[i];
         document.getElementById("Ingredients").appendChild(sel);
     }
 }
 
 function ustensilsTags() {
+    document.getElementById("Ustensiles").innerHTML = ''
     let ustensils = filteredRecipes
         .map(recipe => recipe.ustensils)
         .flat()
     ustensils = [...new Set(ustensils)]
     for (var i = 0; i < ustensils.length; i++) {
-        var sel = document.createElement("option");
-        sel.innerHTML = ustensils[i]
-        sel.value = ustensils[i];
+        
+            var sel = document.createElement("option");
+            sel.innerHTML = ustensils[i]
+            sel.value = ustensils[i];
         document.getElementById("Ustensiles").appendChild(sel);
     }
 }
 
 function appliancesTags() {
+    document.getElementById("Appareils").innerHTML = ''
     let appliances = filteredRecipes
         .map(recipe => recipe.appliance)
+        .flat()
     appliances = [...new Set(appliances)]
     for (var i = 0; i < appliances.length; i++) {
-        var sel = document.createElement("option");
-        sel.innerHTML = appliances[i]
-        sel.value = appliances[i];
+      
+            var sel = document.createElement("option");
+            sel.innerHTML = appliances[i]
+            sel.value = appliances[i];
+        
         document.getElementById("Appareils").appendChild(sel);
     }
 }
+
+ 
 
 function addTagElement(value, callback){
     const tags = document.querySelector('#tags')
     const element = document.createElement('li')
     element.innerText = value
     element.addEventListener('click', (e) => {
+        e.target.remove()  
         callback()
-        e.target.remove()
+        displayData(allRecipes)
+        console.log(allRecipes)
     })
     tags.appendChild(element)
 }
+
+
+
 
 function initEventSelect(){
     document.querySelector('#Ingredients').addEventListener('change', (e) => {
         ingredients.push(e.target.value)
         addTagElement(e.target.value, () => {
             ingredients = ingredients.filter(i => i !== e.target.value)
-            filterRecipes()
         })
-        filterRecipes()
+        filterRecipesByTags(e.target.value, 'ingredient')
     })
 
     document.querySelector('#Appareils').addEventListener('change', (e) => {
         appliances.push(e.target.value)
         addTagElement(e.target.value, () => {
             appliances = appliances.filter(i => i !== e.target.value)
-            filterRecipes()
         })
-        filterRecipes()
+        filterRecipesByTags(e.target.value, 'appliance')
     })
 
     document.querySelector('#Ustensiles').addEventListener('change', (e) => {
         ustensils.push(e.target.value)
         addTagElement(e.target.value, () => {
             ustensils = ustensils.filter(i => i !== e.target.value)
-            filterRecipes()
         })
-        filterRecipes()
+        filterRecipesByTags(e.target.value, 'ustensil')
     })
 }
 
 
+
+
 init();
-
-/** */
-
-/**
- * TODO:
- * - Remplir les listes d'ingredients / appareils et ustensils
- * - Au click sur un élément d'une des listes, ajouter l'élément au tableau correspondant (ingredients, appliances ou ustensils)
- * - Rappeler la fonction filterRecipes
- */
