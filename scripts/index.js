@@ -25,12 +25,8 @@ function initEventForm() {
     const researchBar = document.querySelector('.research_bar input')
     researchBar.addEventListener('input', (e) => {
         e.preventDefault()
-        if (e.target.value.length === 0) {
-            displayData(allRecipes)
+        if (e.target.value.length > 0 && e.target.value.length < 3) {
             return
-        }
-        if (e.target.value.length < 3) {
-            return 
         }
         query = e.target.value
         description = e.target.value
@@ -62,6 +58,19 @@ function filterByIngredient(recipe) {
     }).length > 0
 }
 
+function filterByUstensil(recipe) {
+    if (ustensils.length === 0) {
+        return true
+    }
+    return recipe.ustensils.filter(ustensil => ustensils.includes(ustensil)).length > 0
+}
+
+function filterByAppliance(recipe) {
+    if (appliances.length === 0) {
+        return true
+    }
+    return appliances.includes(recipe.appliance)
+}
 
 function filterByDescription(recipe) {
     if (description === '') {
@@ -87,12 +96,13 @@ function applyTagsToOptions() {
 function filterRecipes() {
     const recipes = allRecipes.filter((recipe) => {
         return (filterByName(recipe) || filterByDescription(recipe))  &&
-            filterByIngredient(recipe)
+            filterByIngredient(recipe) &&
+            filterByUstensil(recipe) &&
+            filterByAppliance(recipe)
     })
     filteredRecipes = recipes
     applyTagsToOptions()
     displayData(recipes)
-    console.log(recipes)
 }
 
 function filterRecipesByTags(selectedTag, type){
@@ -121,7 +131,7 @@ function ingredientsTags() {
         .flat()
     ingredients = [...new Set(ingredients)]
     for (var i = 0; i < ingredients.length; i++) {
-       
+
             var sel = document.createElement("option");
             sel.innerHTML = ingredients[i]
             sel.value = ingredients[i];
@@ -136,7 +146,7 @@ function ustensilsTags() {
         .flat()
     ustensils = [...new Set(ustensils)]
     for (var i = 0; i < ustensils.length; i++) {
-        
+
             var sel = document.createElement("option");
             sel.innerHTML = ustensils[i]
             sel.value = ustensils[i];
@@ -151,26 +161,25 @@ function appliancesTags() {
         .flat()
     appliances = [...new Set(appliances)]
     for (var i = 0; i < appliances.length; i++) {
-      
+
             var sel = document.createElement("option");
             sel.innerHTML = appliances[i]
             sel.value = appliances[i];
-        
+
         document.getElementById("Appareils").appendChild(sel);
     }
 }
 
- 
+
 
 function addTagElement(value, callback){
     const tags = document.querySelector('#tags')
     const element = document.createElement('li')
     element.innerText = value
     element.addEventListener('click', (e) => {
-        e.target.remove()  
-        callback()
-        displayData(allRecipes)
-        console.log(allRecipes)
+        e.target.remove()
+        callback(value)
+        filterRecipes()
     })
     tags.appendChild(element)
 }
@@ -181,26 +190,26 @@ function addTagElement(value, callback){
 function initEventSelect(){
     document.querySelector('#Ingredients').addEventListener('change', (e) => {
         ingredients.push(e.target.value)
-        addTagElement(e.target.value, () => {
-            ingredients = ingredients.filter(i => i !== e.target.value)
+        addTagElement(e.target.value, (value) => {
+            ingredients = ingredients.filter(i => i !== value)
         })
-        filterRecipesByTags(e.target.value, 'ingredient')
+        filterRecipes()
     })
 
     document.querySelector('#Appareils').addEventListener('change', (e) => {
         appliances.push(e.target.value)
-        addTagElement(e.target.value, () => {
-            appliances = appliances.filter(i => i !== e.target.value)
+        addTagElement(e.target.value, (value) => {
+            appliances = appliances.filter(i => i !== value)
         })
-        filterRecipesByTags(e.target.value, 'appliance')
+        filterRecipes()
     })
 
     document.querySelector('#Ustensiles').addEventListener('change', (e) => {
         ustensils.push(e.target.value)
-        addTagElement(e.target.value, () => {
-            ustensils = ustensils.filter(i => i !== e.target.value)
+        addTagElement(e.target.value, (value) => {
+            ustensils = ustensils.filter(i => i !== value)
         })
-        filterRecipesByTags(e.target.value, 'ustensil')
+        filterRecipes()
     })
 }
 
