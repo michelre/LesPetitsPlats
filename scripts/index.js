@@ -124,7 +124,7 @@ function filterRecipesByTags(selectedTag, type){
 
 
 function ingredientsTags() {
-    document.getElementById("Ingredients").innerHTML = ''
+    document.getElementById("filter_ingredients").innerHTML = ''
     let ingredients = filteredRecipes
         .map(recipe => recipe.ingredients
             .map(ingredient => ingredient.ingredient))
@@ -132,41 +132,41 @@ function ingredientsTags() {
     ingredients = [...new Set(ingredients)]
     for (var i = 0; i < ingredients.length; i++) {
 
-            var sel = document.createElement("option");
+            var sel = document.createElement("li");
             sel.innerHTML = ingredients[i]
             sel.value = ingredients[i];
-        document.getElementById("Ingredients").appendChild(sel);
+        document.getElementById("filter_ingredients").appendChild(sel);
     }
 }
 
 function ustensilsTags() {
-    document.getElementById("Ustensiles").innerHTML = ''
+    document.getElementById("filter_ustensiles").innerHTML = ''
     let ustensils = filteredRecipes
         .map(recipe => recipe.ustensils)
         .flat()
     ustensils = [...new Set(ustensils)]
     for (var i = 0; i < ustensils.length; i++) {
 
-            var sel = document.createElement("option");
+            var sel = document.createElement("li");
             sel.innerHTML = ustensils[i]
             sel.value = ustensils[i];
-        document.getElementById("Ustensiles").appendChild(sel);
+        document.getElementById("filter_ustensiles").appendChild(sel);
     }
 }
 
 function appliancesTags() {
-    document.getElementById("Appareils").innerHTML = ''
+    document.getElementById("filter_appareils").innerHTML = ''
     let appliances = filteredRecipes
         .map(recipe => recipe.appliance)
         .flat()
     appliances = [...new Set(appliances)]
     for (var i = 0; i < appliances.length; i++) {
 
-            var sel = document.createElement("option");
+            var sel = document.createElement("li");
             sel.innerHTML = appliances[i]
             sel.value = appliances[i];
 
-        document.getElementById("Appareils").appendChild(sel);
+        document.getElementById("filter_appareils").appendChild(sel);
     }
 }
 
@@ -188,7 +188,7 @@ function addTagElement(value, callback){
 
 
 function initEventSelect(){
-    document.querySelector('#Ingredients').addEventListener('change', (e) => {
+    document.querySelector('#filter_ingredients').addEventListener('change', (e) => {
         ingredients.push(e.target.value)
         addTagElement(e.target.value, (value) => {
             ingredients = ingredients.filter(i => i !== value)
@@ -213,7 +213,37 @@ function initEventSelect(){
     })
 }
 
+const el1 = document.getElementById("filter_ingredients")
 
+document.querySelector('.filter__select--ingredients').addEventListener('click', ()=>{
+    if (el1.style.display === "none"){
+        el1.style.display = "block";
+        }else{
+            el1.style.display = "none"
+        }
 
+})
+
+const el2 = document.getElementById("filter_appareils")
+
+document.querySelector('.filter__select--appareils').addEventListener('click', ()=>{
+    if (el2.style.display === "none"){
+        el2.style.display = "block";
+        }else{
+            el2.style.display = "none"
+        }
+
+})
+
+const el3 = document.getElementById("filter_ustensiles")
+
+document.querySelector('.filter__select--ustensiles').addEventListener('click', ()=>{
+    if (el3.style.display === "none"){
+        el3.style.display = "block";
+        }else{
+            el3.style.display = "none"
+        }
+
+})
 
 init();
